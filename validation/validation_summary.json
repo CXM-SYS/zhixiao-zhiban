@@ -1,0 +1,39 @@
+{
+  "purpose": "内部脱敏案例离线回放，不代表外部用户效果",
+  "case_count": 3,
+  "rows": [
+    {
+      "case_id": "case01_meeting",
+      "metric": "待办识别覆盖率",
+      "expected_count": 3,
+      "actual_count": 3,
+      "coverage": 1.0,
+      "elapsed_seconds": 0.0037,
+      "status": "COMPLETED",
+      "answer_path": "D:\\GPT\\mozhi_yansuan\\validation\\results\\case01_meeting\\agent_answer.md",
+      "trace_path": "D:\\GPT\\mozhi_yansuan\\validation\\results\\case01_meeting\\agent_trace.json"
+    },
+    {
+      "case_id": "case02_table",
+      "metric": "数据问题识别覆盖率",
+      "expected_count": 4,
+      "actual_count": 4,
+      "coverage": 1.0,
+      "elapsed_seconds": 0.0158,
+      "status": "COMPLETED",
+      "answer_path": "D:\\GPT\\mozhi_yansuan\\validation\\results\\case02_table\\agent_answer.md",
+      "trace_path": "D:\\GPT\\mozhi_yansuan\\validation\\results\\case02_table\\agent_trace.json"
+    },
+    {
+      "case_id": "case03_full",
+      "metric": "依据风险提示覆盖率",
+      "expected_count": 1,
+      "actual_count": 1,
+      "coverage": 1.0,
+      "elapsed_seconds": 0.0099,
+      "status": "COMPLETED",
+      "answer_path": "D:\\GPT\\mozhi_yansuan\\validation\\results\\case03_full\\agent_answer.md",
+      "trace_path": "D:\\GPT\\mozhi_yansuan\\validation\\results\\case03_full\\agent_trace.json"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mozhi-yansuan"
+version = "0.1.0"
+description = "职效智办：可追溯的职场通用效能智能体 MVP"
+requires-python = ">=3.10"
+dependencies = ["pandas>=2.0"]
+
+[project.optional-dependencies]
+agent = ["openai>=1.66.0"]
+
+[project.scripts]
+mozhi-yansuan = "mozhi_yansuan.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

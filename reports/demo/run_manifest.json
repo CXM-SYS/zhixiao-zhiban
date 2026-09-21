@@ -1,0 +1,147 @@
+{
+  "agent": "zhixiao-zhiban",
+  "version": "0.1.0",
+  "inputs": {
+    "task": {
+      "path": "examples\\task.md",
+      "sha256": "53ceb7fb664f01b01577b381eb3b388d294eb5a3c885e3582e33ba73bcc1bb06"
+    },
+    "data": {
+      "path": "data\\demo_workplace_tasks.csv",
+      "sha256": "30216fe38c7866b2a7b9d6e35b432a70e9350232dfa00aea85d27343ce0b3bd5"
+    },
+    "report": {
+      "path": "examples\\report.txt",
+      "sha256": "72fbe74fe8671ef90dffea8d2364917ba10e42ef47ce21a47395df50c9577372"
+    }
+  },
+  "task": {
+    "line_count": 3,
+    "objectives": [
+      "目标：把本周客户项目进展整理成负责人、截止时间、当前状态、风险和下一步动作，并根据任务表生成一段可发送给部门负责人的周报摘要。",
+      "约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。"
+    ],
+    "constraints": [
+      "约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。"
+    ],
+    "candidate_variables": [],
+    "source_excerpt": "# 周会材料整理与项目进度汇总 目标：把本周客户项目进展整理成负责人、截止时间、当前状态、风险和下一步动作，并根据任务表生成一段可发送给部门负责人的周报摘要。 约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。"
+  },
+  "data_audit": {
+    "rows": 8,
+    "columns": 6,
+    "column_types": {
+      "team": "object",
+      "task": "object",
+      "owner": "object",
+      "deadline": "object",
+      "hours": "int64",
+      "completion_rate": "float64"
+    },
+    "missing": {
+      "team": 0,
+      "task": 0,
+      "owner": 1,
+      "deadline": 1,
+      "hours": 0,
+      "completion_rate": 0
+    },
+    "duplicates": 1,
+    "numeric_summary": {
+      "hours": {
+        "count": 8,
+        "min": 2.0,
+        "max": 40.0,
+        "mean": 8.875,
+        "median": 5.0,
+        "std": 12.755251019538132,
+        "iqr_outliers": 1
+      },
+      "completion_rate": {
+        "count": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.51875,
+        "median": 0.55,
+        "std": 0.3239681421727407,
+        "iqr_outliers": 0
+      }
+    },
+    "unit_tokens": {}
+  },
+  "evidence_audit": {
+    "report_provided": true,
+    "report_numeric_tokens": 0,
+    "matched_numeric_tokens": 0,
+    "numeric_anchor_coverage": null,
+    "unanchored_claim_lines": [
+      "结论：客户项目需要继续关注延期风险。建议下周优先完成验收材料并确认负责人。"
+    ]
+  },
+  "recommendations": [
+    {
+      "stage": "task",
+      "recommendation": "先人工确认任务目标、交付格式和约束，再让智能体生成整理草案。"
+    },
+    {
+      "stage": "data",
+      "recommendation": "优先处理缺失、重复、单位和异常值问题，保留处理前后记录。"
+    },
+    {
+      "stage": "analysis",
+      "recommendation": "字段分布、分组统计、趋势对比和可视化，并保留原始汇总结果作为复核基线。"
+    },
+    {
+      "stage": "evidence",
+      "recommendation": "每个核心结论绑定数据列、运行记录、结果表或图形位置。"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "DATA-001",
+      "category": "data",
+      "severity": "medium",
+      "title": "存在重复行",
+      "detail": "发现 1 行完全重复记录。",
+      "source": "data:rows",
+      "recommendation": "确认重复是业务记录还是导入错误，并在正式分析前记录处理规则。"
+    },
+    {
+      "finding_id": "DATA-M-002",
+      "category": "data",
+      "severity": "medium",
+      "title": "列“owner”存在缺失值",
+      "detail": "1/8 个单元为空。",
+      "source": "data:column=owner",
+      "recommendation": "说明缺失机制；根据业务含义选择删除、填补或保留，并记录影响。"
+    },
+    {
+      "finding_id": "DATA-M-003",
+      "category": "data",
+      "severity": "medium",
+      "title": "列“deadline”存在缺失值",
+      "detail": "1/8 个单元为空。",
+      "source": "data:column=deadline",
+      "recommendation": "说明缺失机制；根据业务含义选择删除、填补或保留，并记录影响。"
+    },
+    {
+      "finding_id": "DATA-O-004",
+      "category": "data",
+      "severity": "high",
+      "title": "列“hours”疑似存在异常值",
+      "detail": "IQR规则识别到 1 个候选异常值，范围约为 [-2.875, 12.12]。",
+      "source": "data:column=hours",
+      "recommendation": "回到原始记录确认单位、录入和真实极端情况，避免直接删除。"
+    },
+    {
+      "finding_id": "EVIDENCE-U-001",
+      "category": "evidence",
+      "severity": "medium",
+      "title": "结论行缺少可定位数值锚点",
+      "detail": "结论：客户项目需要继续关注延期风险。建议下周优先完成验收材料并确认负责人。",
+      "source": "report:line=1",
+      "recommendation": "补充数据、表格、图形或代码位置，说明该结论的验证依据。"
+    }
+  ],
+  "status": "PASS_WITH_REVIEW"
+}

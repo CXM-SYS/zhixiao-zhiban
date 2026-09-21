@@ -1,0 +1,4 @@
+﻿case_id,metric,expected_count,actual_count,coverage,elapsed_seconds,status,answer_path,trace_path
+case01_meeting,待办识别覆盖率,3,3,1.0,0.0037,COMPLETED,D:\GPT\mozhi_yansuan\validation\results\case01_meeting\agent_answer.md,D:\GPT\mozhi_yansuan\validation\results\case01_meeting\agent_trace.json
+case02_table,数据问题识别覆盖率,4,4,1.0,0.0158,COMPLETED,D:\GPT\mozhi_yansuan\validation\results\case02_table\agent_answer.md,D:\GPT\mozhi_yansuan\validation\results\case02_table\agent_trace.json
+case03_full,依据风险提示覆盖率,1,1,1.0,0.0099,COMPLETED,D:\GPT\mozhi_yansuan\validation\results\case03_full\agent_answer.md,D:\GPT\mozhi_yansuan\validation\results\case03_full\agent_trace.json

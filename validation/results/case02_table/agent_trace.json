@@ -1,0 +1,170 @@
+{
+  "mode": "mock",
+  "model": "deterministic-tool-replay",
+  "final_output": "# 职效智办工作效率报告\n\n## 任务理解\n- 目标线索：请检查这张项目任务表，汇总数据质量问题，并指出哪些负责人或日期需要补充。\n- 限制条件：待人工确认\n\n## 文档摘要与待办\n- 未单独提供办公材料，待办线索从用户需求中提取。\n- 待办：请检查这张项目任务表，汇总数据质量问题，并指出哪些负责人或日期需要补充。｜负责人：或日期需要补充｜截止：待确认｜来源行：1\n\n## 数据发现\n- 数据规模：6 行 × 6 列。\n- 完全重复行：1 行。\n- 缺失值统计：{\"team\": 0, \"task\": 0, \"owner\": 1, \"deadline\": 1, \"hours\": 0, \"completion_rate\": 0}。\n- 自动提示：\n  - 存在重复行：发现 1 行完全重复记录。\n  - 列“owner”存在缺失值：1/6 个单元为空。\n  - 列“deadline”存在缺失值：1/6 个单元为空。\n  - 列“hours”疑似存在异常值：IQR规则识别到 1 个候选异常值，范围约为 [-0.875, 10.12]。\n\n## 风险提示\n- 未同时提供表格与汇报材料，本次不执行结论依据核验。\n\n## 建议动作\n- 口径确认：确认交付物、统计口径、负责人和截止时间；未明确的信息保留为待确认。\n- 数据整理：先处理缺失、重复、单位和候选异常值，并保留处理记录。\n- 统计汇总：数值字段包括hours,completion_rate，可生成汇总指标和分组对比；文本字段包括team,task,owner,deadline，适合用作分类或负责人维度。\n- 汇报输出：把每项结论绑定到表格字段、原始记录或图表，并列出风险和下一步。\n\n## 人工确认事项\n- 自动提取的负责人、日期、异常值和风险均需回到原始材料确认。\n- 未明确的任务状态统一保留为待确认，不自动标记为已完成。\n- 对外发送前，请复核敏感信息、数字口径、附件版本和收件人。",
+  "tool_trace": [
+    {
+      "tool": "extract_task_requirements",
+      "arguments": {
+        "task_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_table_request.md"
+      },
+      "output": {
+        "task_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_table_request.md",
+        "requirements": {
+          "line_count": 1,
+          "objectives": [
+            "请检查这张项目任务表，汇总数据质量问题，并指出哪些负责人或日期需要补充。"
+          ],
+          "constraints": [],
+          "candidate_variables": [],
+          "source_excerpt": "请检查这张项目任务表，汇总数据质量问题，并指出哪些负责人或日期需要补充。"
+        }
+      }
+    },
+    {
+      "tool": "extract_action_items",
+      "arguments": {
+        "document_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_table_request.md"
+      },
+      "output": {
+        "document_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_table_request.md",
+        "actions": {
+          "line_count": 1,
+          "action_item_count": 1,
+          "items": [
+            {
+              "item": "请检查这张项目任务表，汇总数据质量问题，并指出哪些负责人或日期需要补充。",
+              "owner": "或日期需要补充",
+              "deadline": "待确认",
+              "status": "待确认",
+              "source_line": 1
+            }
+          ],
+          "needs_human_confirmation": true
+        }
+      }
+    },
+    {
+      "tool": "inspect_dataset",
+      "arguments": {
+        "data_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_tasks.csv"
+      },
+      "output": {
+        "data_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_tasks.csv",
+        "rows": 6,
+        "columns": 6,
+        "audit": {
+          "rows": 6,
+          "columns": 6,
+          "column_types": {
+            "team": "object",
+            "task": "object",
+            "owner": "object",
+            "deadline": "object",
+            "hours": "int64",
+            "completion_rate": "float64"
+          },
+          "missing": {
+            "team": 0,
+            "task": 0,
+            "owner": 1,
+            "deadline": 1,
+            "hours": 0,
+            "completion_rate": 0
+          },
+          "duplicates": 1,
+          "numeric_summary": {
+            "hours": {
+              "count": 6,
+              "min": 2.0,
+              "max": 40.0,
+              "mean": 10.166666666666666,
+              "median": 5.0,
+              "std": 14.702607478493965,
+              "iqr_outliers": 1
+            },
+            "completion_rate": {
+              "count": 6,
+              "min": 0.0,
+              "max": 0.75,
+              "mean": 0.425,
+              "median": 0.4,
+              "std": 0.29790938219532465,
+              "iqr_outliers": 0
+            }
+          },
+          "unit_tokens": {}
+        },
+        "findings": [
+          {
+            "finding_id": "DATA-001",
+            "category": "data",
+            "severity": "medium",
+            "title": "存在重复行",
+            "detail": "发现 1 行完全重复记录。",
+            "source": "data:rows",
+            "recommendation": "确认重复是业务记录还是导入错误，并在正式分析前记录处理规则。"
+          },
+          {
+            "finding_id": "DATA-M-002",
+            "category": "data",
+            "severity": "medium",
+            "title": "列“owner”存在缺失值",
+            "detail": "1/6 个单元为空。",
+            "source": "data:column=owner",
+            "recommendation": "说明缺失机制；根据业务含义选择删除、填补或保留，并记录影响。"
+          },
+          {
+            "finding_id": "DATA-M-003",
+            "category": "data",
+            "severity": "medium",
+            "title": "列“deadline”存在缺失值",
+            "detail": "1/6 个单元为空。",
+            "source": "data:column=deadline",
+            "recommendation": "说明缺失机制；根据业务含义选择删除、填补或保留，并记录影响。"
+          },
+          {
+            "finding_id": "DATA-O-004",
+            "category": "data",
+            "severity": "high",
+            "title": "列“hours”疑似存在异常值",
+            "detail": "IQR规则识别到 1 个候选异常值，范围约为 [-0.875, 10.12]。",
+            "source": "data:column=hours",
+            "recommendation": "回到原始记录确认单位、录入和真实极端情况，避免直接删除。"
+          }
+        ]
+      }
+    },
+    {
+      "tool": "recommend_analysis_route",
+      "arguments": {
+        "task_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_table_request.md",
+        "data_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_tasks.csv"
+      },
+      "output": {
+        "task_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_table_request.md",
+        "data_path": "D:\\GPT\\mozhi_yansuan\\validation\\cases\\case02_tasks.csv",
+        "task_excerpt": "请检查这张项目任务表，汇总数据质量问题，并指出哪些负责人或日期需要补充。",
+        "recommendations": [
+          {
+            "stage": "口径确认",
+            "recommendation": "确认交付物、统计口径、负责人和截止时间；未明确的信息保留为待确认。"
+          },
+          {
+            "stage": "数据整理",
+            "recommendation": "先处理缺失、重复、单位和候选异常值，并保留处理记录。"
+          },
+          {
+            "stage": "统计汇总",
+            "recommendation": "数值字段包括hours,completion_rate，可生成汇总指标和分组对比；文本字段包括team,task,owner,deadline，适合用作分类或负责人维度。"
+          },
+          {
+            "stage": "汇报输出",
+            "recommendation": "把每项结论绑定到表格字段、原始记录或图表，并列出风险和下一步。"
+          }
+        ]
+      }
+    }
+  ],
+  "status": "COMPLETED"
+}

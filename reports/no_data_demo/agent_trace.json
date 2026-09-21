@@ -1,0 +1,44 @@
+{
+  "mode": "mock",
+  "model": "deterministic-tool-replay",
+  "final_output": "# 职效智办工作效率报告\n\n## 任务理解\n- 目标线索：目标：把本周客户项目进展整理成负责人、截止时间、当前状态、风险和下一步动作，并根据任务表生成一段可发送给部门负责人的周报摘要。；约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。\n- 限制条件：约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。\n\n## 文档摘要与待办\n- 未单独提供办公材料，待办线索从用户需求中提取。\n- 未识别到明确待办，请人工补充负责人和截止时间。\n\n## 数据发现\n- 未提供表格，本次不执行数据统计与质量检查。\n\n## 风险提示\n- 未同时提供表格与汇报材料，本次不执行结论依据核验。\n\n## 建议动作\n- 先确认交付物、负责人和截止时间，再按待办清单推进。\n\n## 人工确认事项\n- 自动提取的负责人、日期、异常值和风险均需回到原始材料确认。\n- 未明确的任务状态统一保留为待确认，不自动标记为已完成。\n- 对外发送前，请复核敏感信息、数字口径、附件版本和收件人。",
+  "tool_trace": [
+    {
+      "tool": "extract_task_requirements",
+      "arguments": {
+        "task_path": "D:\\GPT\\mozhi_yansuan\\examples\\task.md"
+      },
+      "output": {
+        "task_path": "D:\\GPT\\mozhi_yansuan\\examples\\task.md",
+        "requirements": {
+          "line_count": 3,
+          "objectives": [
+            "目标：把本周客户项目进展整理成负责人、截止时间、当前状态、风险和下一步动作，并根据任务表生成一段可发送给部门负责人的周报摘要。",
+            "约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。"
+          ],
+          "constraints": [
+            "约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。"
+          ],
+          "candidate_variables": [],
+          "source_excerpt": "# 周会材料整理与项目进度汇总 目标：把本周客户项目进展整理成负责人、截止时间、当前状态、风险和下一步动作，并根据任务表生成一段可发送给部门负责人的周报摘要。 约束：缺少负责人或日期的事项必须标记为待确认；不要把计划中的工作写成已完成；所有数字都要能追溯到表格或原始材料。"
+        }
+      }
+    },
+    {
+      "tool": "extract_action_items",
+      "arguments": {
+        "document_path": "D:\\GPT\\mozhi_yansuan\\examples\\task.md"
+      },
+      "output": {
+        "document_path": "D:\\GPT\\mozhi_yansuan\\examples\\task.md",
+        "actions": {
+          "line_count": 3,
+          "action_item_count": 0,
+          "items": [],
+          "needs_human_confirmation": true
+        }
+      }
+    }
+  ],
+  "status": "COMPLETED"
+}

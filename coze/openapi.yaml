@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: 职效智办办公处理插件
+  version: 0.2.0
+  description: 对办公需求、材料、CSV 表格和汇报草稿执行可追溯的整理与核验。
+servers:
+  - url: https://YOUR_PUBLIC_HTTPS_HOST
+paths:
+  /analyze:
+    post:
+      operationId: analyzeWorkplaceMaterials
+      summary: 处理职场办公材料
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - request_text
+              properties:
+                request_text:
+                  type: string
+                  description: 用户要完成的办公任务或工作目标。
+                document_text:
+                  type: string
+                  description: 可选的会议纪要、通知或其他办公材料。
+                data_csv:
+                  type: string
+                  description: 可选的 UTF-8 CSV 表格文本。
+                report_text:
+                  type: string
+                  description: 可选的周报、汇报或结论草稿。
+      responses:
+        "200":
+          description: 办公整理报告
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  answer:
+                    type: string
+                  agent:
+                    type: string
+                  tool_trace:
+                    type: array
+                    items:
+                      type: object
+        "400":
+          description: 输入格式错误
