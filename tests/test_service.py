@@ -42,7 +42,7 @@ def test_homepage_is_available_to_public_visitors() -> None:
             page = response.read().decode("utf-8")
             assert response.status == 200
             assert "职效智办" in page
-            assert "fetch('/analyze'" in page
+            assert "aiAgentReady ? '/agent' : '/analyze'" in page
     finally:
         server.shutdown()
         server.server_close()

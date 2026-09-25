@@ -37,6 +37,19 @@ Render 官方支持从 Git 仓库读取 Dockerfile 创建 Web Service，并会�
 4. 在 Render 的 Settings 中确认 Health Check Path 为 `/health`。
 5. 打开 Render 分配的 `https://你的服务名.onrender.com/health`，看到 `status: ok` 后，再打开服务根地址 `/` 检查交互网页。插件地址仍是 `/analyze`。
 
+## 可选：接入阿里云百炼智能体
+
+当前公开网页默认运行固定工具流程。要启用真正的百炼智能体，先在百炼华北2（北京）创建并发布智能体应用，将此服务的 `POST /analyze` 注册为自定义插件/MCP 工具并挂载到智能体。随后在 Render 的 Environment 设置中添加：
+
+- `BAILIAN_APP_ID`：已发布智能体应用的 APP ID；
+- `DASHSCOPE_API_KEY`：同一业务空间的百炼 API Key，仅在 Render 环境变量中填写，绝不可提交到 GitHub 或发给他人。
+
+环境变量生效后，网页自动切换到百炼智能体调用；`GET /capabilities` 会显示 `ai_agent_ready: true`。请用另一台设备或无痕窗口完成一次对话和一次工具调用测试。模型调用消耗百炼额度；在百炼控制台核对免费额度、开启“免费额度用完即停”，并限制演示流量。
+
+百炼智能体 API 文档：https://help.aliyun.com/zh/model-studio/new-agent-application-api-reference
+
+百炼自定义插件文档：https://help.aliyun.com/zh/model-studio/custom-plug-ins
+
 Free 服务空闲一段时间后会休眠，第一次访问可能需要等待约一分钟；它适合参赛演示和测试，不适合生产服务。Render 的免费服务也使用临时文件系统，因此本项目只在请求期间处理文本，不把材料长期保存。
 
 ## 扣子配置

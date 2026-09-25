@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .agent import ToolCallingResearchAgent
+from .bailian import ask_agent, is_configured
 
 
 MAX_REQUEST_BYTES = 8 * 1024 * 1024
@@ -95,10 +96,13 @@ class _Handler(BaseHTTPRequestHandler):
         if self.path == "/health":
             self._send_json(200, {"status": "ok", "service": "zhixiao-zhiban"})
             return
+        if self.path == "/capabilities":
+            self._send_json(200, {"ai_agent_ready": is_configured()})
+            return
         self._send_json(404, {"error": "not_found"})
 
     def do_POST(self) -> None:
-        if self.path != "/analyze":
+        if self.path not in ("/analyze", "/agent"):
             self._send_json(404, {"error": "not_found"})
             return
         try:
@@ -109,7 +113,13 @@ class _Handler(BaseHTTPRequestHandler):
             payload = json.loads(raw.decode("utf-8"))
             if not isinstance(payload, dict):
                 raise ValueError("请求体必须是JSON对象")
-            self._send_json(200, analyze_payload(payload))
+            if self.path == "/agent":
+                if not is_configured():
+                    self._send_json(503, {"error": "agent_not_configured", "message": "百炼智能体尚未配置"})
+                    return
+                self._send_json(200, ask_agent(payload))
+            else:
+                self._send_json(200, analyze_payload(payload))
         except json.JSONDecodeError:
             self._send_json(400, {"error": "invalid_json"})
         except Exception as exc:

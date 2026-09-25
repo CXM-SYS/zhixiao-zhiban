@@ -55,7 +55,8 @@
         <button class="primary" id="submit" type="submit">生成分析报告</button>
       </form>
       <div id="status" role="status" aria-live="polite"></div>
-      <p class="hint">此公开演示直接调用本站分析服务，不使用扣子额度。当前版本采用固定工具流程和规则核验；结果仅供辅助，负责人、日期和结论需人工复核。材料仅在请求期间处理，不作持久保存。</p>
+      <p class="hint" id="mode-note">正在检查智能体连接状态…</p>
+      <p class="hint">不会消耗扣子额度。请使用公开、脱敏材料；负责人、日期和结论需人工复核。</p>
     </section>
     <section aria-labelledby="result-title">
       <h2 id="result-title">分析报告</h2>
@@ -67,6 +68,16 @@
     const status = document.getElementById('status');
     const result = document.getElementById('result');
     const submit = document.getElementById('submit');
+    let aiAgentReady = false;
+    fetch('/capabilities').then(response => response.json()).then(data => {
+      aiAgentReady = Boolean(data.ai_agent_ready);
+      document.getElementById('mode-note').textContent = aiAgentReady
+        ? '当前已连接百炼智能体：模型可理解任务并调用办公分析工具；模型调用会消耗百炼账户额度。'
+        : '当前仅提供固定工具流程的分析演示；百炼智能体尚未连接。';
+      submit.textContent = aiAgentReady ? '让智能体分析' : '生成分析报告（规则演示）';
+    }).catch(() => {
+      document.getElementById('mode-note').textContent = '暂时无法读取智能体状态，仍可尝试规则演示。';
+    });
     document.getElementById('meeting-sample').addEventListener('click', () => {
       fields.request.value = '请整理这段会议记录，列出待办、负责人、截止日期和需要确认的事项。';
       fields.document.value = '9月21日项目例会：李宁负责整理验收材料，9月23日前完成。王芳下周一跟进活动数据。陈晨确认高优先级问题修复情况，截止时间尚未明确。';
@@ -92,7 +103,7 @@
       status.textContent = '正在分析，免费服务首次唤醒可能稍慢…';
       result.classList.remove('empty');
       try {
-        const response = await fetch('/analyze', {
+        const response = await fetch(aiAgentReady ? '/agent' : '/analyze', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({request_text: fields.request.value, document_text: fields.document.value, data_csv: fields.csv.value, report_text: fields.report.value})
