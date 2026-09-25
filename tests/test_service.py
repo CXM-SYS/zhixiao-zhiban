@@ -1,4 +1,8 @@
-from mozhi_yansuan.service import analyze_payload
+from http.server import ThreadingHTTPServer
+from threading import Thread
+from urllib.request import urlopen
+
+from mozhi_yansuan.service import _Handler, analyze_payload
 
 
 def test_coze_payload_returns_workplace_answer() -> None:
@@ -27,3 +31,19 @@ def test_coze_payload_can_use_legacy_task_alias_without_data() -> None:
     result = analyze_payload({"task_text": "请整理这项工作并列出下一步。"})
     assert result["status"] == "COMPLETED"
     assert "下一步" in result["answer"]
+
+
+def test_homepage_is_available_to_public_visitors() -> None:
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with urlopen(f"http://127.0.0.1:{server.server_port}/", timeout=5) as response:
+            page = response.read().decode("utf-8")
+            assert response.status == 200
+            assert "职效智办" in page
+            assert "fetch('/analyze'" in page
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)

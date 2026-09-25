@@ -9,6 +9,8 @@
 
 健康检查：`GET /health`。
 
+交互式演示网页：`GET /`。网页可直接填写任务、粘贴办公材料或上传 CSV，调用本站 `POST /analyze`，无需扣子账号或额度。当前接口使用固定工具流程和规则核验，不调用生成式模型。
+
 办公接口：`POST /analyze`，请求字段为：
 
 - `request_text`：必填；
@@ -33,7 +35,7 @@ Render 官方支持从 Git 仓库读取 Dockerfile 创建 Web Service，并会�
 2. 登录 Render，选择 **New → Blueprint**，连接 GitHub 仓库并选择 `render.yaml`。
 3. 检查服务名为 `zhixiao-zhiban`，计划可以先选择 Free，点击创建并等待部署完成。
 4. 在 Render 的 Settings 中确认 Health Check Path 为 `/health`。
-5. 打开 Render 分配的 `https://你的服务名.onrender.com/health`，看到 `status: ok` 后，插件地址就是 `https://你的服务名.onrender.com/analyze`。
+5. 打开 Render 分配的 `https://你的服务名.onrender.com/health`，看到 `status: ok` 后，再打开服务根地址 `/` 检查交互网页。插件地址仍是 `/analyze`。
 
 Free 服务空闲一段时间后会休眠，第一次访问可能需要等待约一分钟；它适合参赛演示和测试，不适合生产服务。Render 的免费服务也使用临时文件系统，因此本项目只在请求期间处理文本，不把材料长期保存。
 

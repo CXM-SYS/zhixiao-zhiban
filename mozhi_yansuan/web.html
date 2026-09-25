@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>职效智办｜办公材料分析演示</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, "Microsoft YaHei", sans-serif; color: #17243c; background: #f3f6fb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #172b55; color: white; padding: 28px max(20px, calc((100vw - 1050px) / 2)); }
+    header h1 { margin: 0 0 8px; font-size: 28px; }
+    header p { margin: 0; color: #dbe5fb; line-height: 1.6; }
+    main { max-width: 1050px; margin: 24px auto 50px; padding: 0 18px; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    section { background: white; border: 1px solid #dbe3ef; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px #17243c0b; }
+    h2 { margin: 0 0 14px; font-size: 20px; }
+    label { display: block; margin: 16px 0 6px; font-weight: 650; }
+    textarea, input[type=file] { width: 100%; border: 1px solid #b8c5d8; border-radius: 8px; padding: 10px; font: inherit; }
+    textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
+    #request { min-height: 120px; }
+    button { border: 0; border-radius: 8px; padding: 11px 16px; font: inherit; font-weight: 650; cursor: pointer; }
+    .primary { background: #2358c7; color: white; width: 100%; margin-top: 20px; }
+    .primary:disabled { opacity: .6; cursor: wait; }
+    .samples { display: flex; gap: 8px; flex-wrap: wrap; }
+    .samples button { background: #eaf0fc; color: #17469b; }
+    .hint { font-size: 13px; line-height: 1.6; color: #52627b; }
+    #status { min-height: 25px; margin-top: 12px; color: #2358c7; }
+    #result { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; font-size: 14px; }
+    .empty { color: #66768e; }
+    @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>职效智办</h1>
+    <p>从办公材料中整理待办、检查 CSV 数据，并提示汇报结论的证据缺口。</p>
+  </header>
+  <main>
+    <section aria-labelledby="input-title">
+      <h2 id="input-title">输入材料</h2>
+      <div class="samples">
+        <button type="button" id="meeting-sample">试用会议纪要示例</button>
+        <button type="button" id="data-sample">试用数据核验示例</button>
+      </div>
+      <form id="analysis-form">
+        <label for="request">希望完成什么任务？ *</label>
+        <textarea id="request" required placeholder="例如：整理会议待办，并检查数据和汇报结论是否一致"></textarea>
+        <label for="document">会议记录或办公文档（粘贴文本）</label>
+        <textarea id="document" placeholder="可选；请勿输入个人敏感信息"></textarea>
+        <label for="csv">CSV 数据</label>
+        <textarea id="csv" placeholder="可粘贴 CSV 文本，或选择本地 CSV 文件"></textarea>
+        <input type="file" id="csv-file" accept=".csv,text/csv" aria-label="选择 CSV 文件">
+        <label for="report">待核验的汇报草稿</label>
+        <textarea id="report" placeholder="可选；配合 CSV 检查结论的依据"></textarea>
+        <button class="primary" id="submit" type="submit">生成分析报告</button>
+      </form>
+      <div id="status" role="status" aria-live="polite"></div>
+      <p class="hint">此公开演示直接调用本站分析服务，不使用扣子额度。当前版本采用固定工具流程和规则核验；结果仅供辅助，负责人、日期和结论需人工复核。材料仅在请求期间处理，不作持久保存。</p>
+    </section>
+    <section aria-labelledby="result-title">
+      <h2 id="result-title">分析报告</h2>
+      <div id="result" class="empty">填写材料并点击“生成分析报告”，结果将在这里显示。</div>
+    </section>
+  </main>
+  <script>
+    const fields = Object.fromEntries(['request', 'document', 'csv', 'report'].map(id => [id, document.getElementById(id)]));
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+    const submit = document.getElementById('submit');
+    document.getElementById('meeting-sample').addEventListener('click', () => {
+      fields.request.value = '请整理这段会议记录，列出待办、负责人、截止日期和需要确认的事项。';
+      fields.document.value = '9月21日项目例会：李宁负责整理验收材料，9月23日前完成。王芳下周一跟进活动数据。陈晨确认高优先级问题修复情况，截止时间尚未明确。';
+      fields.csv.value = '';
+      fields.report.value = '';
+    });
+    document.getElementById('data-sample').addEventListener('click', () => {
+      fields.request.value = '检查任务数据质量，并核验汇报草稿的数字是否有数据依据。';
+      fields.document.value = '';
+      fields.csv.value = '任务,负责人,工时,状态\n整理材料,李宁,6,进行中\n跟进数据,王芳,8,进行中\n确认问题,,40,未开始\n整理材料,李宁,6,进行中';
+      fields.report.value = '本批次共有4条任务，所有任务均已完成。';
+    });
+    document.getElementById('csv-file').addEventListener('change', async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 6 * 1024 * 1024) { status.textContent = 'CSV 文件超过 6 MB，请换用较小文件。'; return; }
+      fields.csv.value = await file.text();
+      status.textContent = `已载入 ${file.name}，点击生成分析报告。`;
+    });
+    document.getElementById('analysis-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      submit.disabled = true;
+      status.textContent = '正在分析，免费服务首次唤醒可能稍慢…';
+      result.classList.remove('empty');
+      try {
+        const response = await fetch('/analyze', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({request_text: fields.request.value, document_text: fields.document.value, data_csv: fields.csv.value, report_text: fields.report.value})
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || data.error || '服务暂时不可用');
+        result.textContent = data.answer;
+        status.textContent = '分析完成。请对照原始材料复核重要结论。';
+      } catch (error) {
+        result.textContent = '';
+        status.textContent = `分析失败：${error.message}`;
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

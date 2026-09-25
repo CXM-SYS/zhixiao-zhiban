@@ -18,5 +18,8 @@ mozhi-yansuan = "mozhi_yansuan.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 
+[tool.setuptools.package-data]
+mozhi_yansuan = ["web.html"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
