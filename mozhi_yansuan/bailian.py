@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -36,9 +37,7 @@ def ask_agent(payload: dict[str, str]) -> dict[str, str]:
         raise ValueError("发送给智能体的内容过长，请缩减至约1.2万字以内")
 
     checked_csv = verified_office_csv(fields["CSV数据"], fields["待核验汇报"]) if fields["CSV数据"] else None
-    if checked_csv and not fields["办公材料"]:
-        return {"status": "COMPLETED", "answer": checked_csv, "agent": "职效智办·数据核验工具"}
-    if checked_csv:
+    if checked_csv and fields["办公材料"]:
         document_fields = {
             "用户需求": "只整理办公材料中的待办、负责人、原文截止时间及人工确认事项。CSV 与汇报草稿由网站程序另行核验；不要讨论或计算其中的任何数字。",
             "办公材料": fields["办公材料"],
@@ -46,8 +45,17 @@ def ask_agent(payload: dict[str, str]) -> dict[str, str]:
             "待核验汇报": "",
         }
         prompt = "请只处理下面的办公材料，不要分析未提供的 CSV 或汇报草稿。\n" + json.dumps(document_fields, ensure_ascii=False)
+    elif checked_csv:
+        advice_fields = {**fields, "CSV程序核验": checked_csv}
+        prompt = (
+            "请先调用已配置的办公分析工具理解用户任务。CSV 数字与草稿判定已由网站程序逐行核验，"
+            "你的最终回复只写需要人工确认的业务口径或后续动作，不要复述、重算或改写任何数字和判定，"
+            "也不要自动删除重复行。\n" + json.dumps(advice_fields, ensure_ascii=False)
+        )
     else:
         prompt = original_prompt
+    if len(prompt) > MAX_AGENT_INPUT_CHARS:
+        raise ValueError("发送给智能体的内容过长，请缩减至约1.2万字以内")
 
     request_body = json.dumps({"input": {"prompt": prompt}, "parameters": {}, "debug": {}}, ensure_ascii=False).encode("utf-8")
     request = Request(
@@ -68,5 +76,16 @@ def ask_agent(payload: dict[str, str]) -> dict[str, str]:
     if not isinstance(answer, str) or not answer.strip():
         raise RuntimeError("百炼未返回有效答复，请检查智能体配置")
     if checked_csv:
-        answer = "## 会议材料整理（智能体辅助，请核对原文）\n" + answer.strip() + "\n\n" + checked_csv
+        if fields["办公材料"]:
+            answer = "## 会议材料整理（智能体辅助，请核对原文）\n" + answer.strip() + "\n\n" + checked_csv
+        else:
+            advice = answer.strip()
+            # Keep uncertain model arithmetic out of the checked report.
+            if (
+                re.search(r"\d|[零一二三四五六七八九十百千万两]+\s*(?:小时|条|项|个|%)", advice)
+                or re.search(r"(?:结论|草稿).{0,12}(?:成立|不成立|正确|错误)", advice)
+                or len(advice) > 800
+            ):
+                advice = "请按程序核验结果逐项确认业务口径，特别是重复记录、负责人和任务状态。"
+            answer = checked_csv + "\n\n## 智能体建议（需人工复核）\n" + advice
     return {"status": "COMPLETED", "answer": answer, "agent": "职效智办·百炼智能体"}

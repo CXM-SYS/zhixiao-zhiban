@@ -31,19 +31,35 @@ def test_bailian_uses_published_agent_and_keeps_key_in_header(monkeypatch) -> No
     assert result["answer"] == "已核对来源"
 
 
-def test_office_csv_is_verified_without_model_arithmetic(monkeypatch) -> None:
+def test_office_csv_still_calls_agent_without_using_model_arithmetic(monkeypatch) -> None:
     monkeypatch.setenv("DASHSCOPE_API_KEY", "test-secret")
     monkeypatch.setenv("BAILIAN_APP_ID", "test-app")
     data = "任务,负责人,工时,状态\n甲,李宁,6,进行中\n甲,李宁,6,进行中\n"
-    with patch("mozhi_yansuan.bailian.urlopen") as open_mock:
+    response = BytesIO(json.dumps({"output": {"text": "请确认重复记录是否应保留。"}}).encode())
+    with patch("mozhi_yansuan.bailian.urlopen", return_value=response) as open_mock:
         result = ask_agent({
             "request_text": "核验汇报",
             "data_csv": data,
             "report_text": "登记工时合计 12 小时，没有重复记录。",
         })
-    open_mock.assert_not_called()
+    open_mock.assert_called_once()
     assert "6+6 = 12 小时" in result["answer"]
     assert "完全重复 1 条" in result["answer"]
+    assert "请确认重复记录是否应保留" in result["answer"]
+
+
+def test_wrong_model_numbers_are_excluded_from_checked_csv(monkeypatch) -> None:
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "test-secret")
+    monkeypatch.setenv("BAILIAN_APP_ID", "test-app")
+    response = BytesIO(json.dumps({"output": {"text": "实际只有 6 小时。"}}).encode())
+    with patch("mozhi_yansuan.bailian.urlopen", return_value=response):
+        result = ask_agent({
+            "request_text": "核验汇报",
+            "data_csv": "任务,负责人,工时,状态\n甲,李宁,6,进行中\n乙,王芳,8,已完成\n",
+            "report_text": "登记工时合计 14 小时。",
+        })
+    assert "6+8 = 14 小时" in result["answer"]
+    assert "实际只有 6 小时" not in result["answer"]
 
 
 def test_document_model_cannot_recount_office_csv(monkeypatch) -> None:
