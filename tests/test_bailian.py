@@ -29,3 +29,35 @@ def test_bailian_uses_published_agent_and_keeps_key_in_header(monkeypatch) -> No
     prompt = json.loads(request.data.decode())["input"]["prompt"]
     assert json.loads(prompt.split("\n", 1)[1])["CSV数据"] == "count\n20"
     assert result["answer"] == "已核对来源"
+
+
+def test_office_csv_is_verified_without_model_arithmetic(monkeypatch) -> None:
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "test-secret")
+    monkeypatch.setenv("BAILIAN_APP_ID", "test-app")
+    data = "任务,负责人,工时,状态\n甲,李宁,6,进行中\n甲,李宁,6,进行中\n"
+    with patch("mozhi_yansuan.bailian.urlopen") as open_mock:
+        result = ask_agent({
+            "request_text": "核验汇报",
+            "data_csv": data,
+            "report_text": "登记工时合计 12 小时，没有重复记录。",
+        })
+    open_mock.assert_not_called()
+    assert "6+6 = 12 小时" in result["answer"]
+    assert "完全重复 1 条" in result["answer"]
+
+
+def test_document_model_cannot_recount_office_csv(monkeypatch) -> None:
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "test-secret")
+    monkeypatch.setenv("BAILIAN_APP_ID", "test-app")
+    response = BytesIO(json.dumps({"output": {"text": "李宁负责整理材料。"}}).encode())
+    with patch("mozhi_yansuan.bailian.urlopen", return_value=response) as open_mock:
+        result = ask_agent({
+            "request_text": "整理会议并核验汇报",
+            "document_text": "李宁负责整理材料。",
+            "data_csv": "任务,负责人,工时,状态\n甲,李宁,6,进行中\n",
+            "report_text": "登记工时合计 6 小时。",
+        })
+    prompt = json.loads(open_mock.call_args.args[0].data.decode())["input"]["prompt"]
+    assert json.loads(prompt.split("\n", 1)[1])["CSV数据"] == ""
+    assert "李宁负责整理材料" in result["answer"]
+    assert "原始合计：6 = 6 小时" in result["answer"]

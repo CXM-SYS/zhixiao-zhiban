@@ -7,6 +7,8 @@ import os
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from .csv_verification import verified_office_csv
+
 
 MAX_AGENT_INPUT_CHARS = 12000
 
@@ -29,9 +31,23 @@ def ask_agent(payload: dict[str, str]) -> dict[str, str]:
     }
     if not fields["用户需求"]:
         raise ValueError("request_text 不能为空")
-    prompt = "请根据以下用户材料完成办公分析；需要统计或核验时先调用已配置的职效智办分析工具，不要编造数字或完成状态。\n" + json.dumps(fields, ensure_ascii=False)
-    if len(prompt) > MAX_AGENT_INPUT_CHARS:
+    original_prompt = "请根据以下用户材料完成办公分析；需要统计或核验时先调用已配置的职效智办分析工具，不要编造数字或完成状态。\n" + json.dumps(fields, ensure_ascii=False)
+    if len(original_prompt) > MAX_AGENT_INPUT_CHARS:
         raise ValueError("发送给智能体的内容过长，请缩减至约1.2万字以内")
+
+    checked_csv = verified_office_csv(fields["CSV数据"], fields["待核验汇报"]) if fields["CSV数据"] else None
+    if checked_csv and not fields["办公材料"]:
+        return {"status": "COMPLETED", "answer": checked_csv, "agent": "职效智办·数据核验工具"}
+    if checked_csv:
+        document_fields = {
+            "用户需求": "只整理办公材料中的待办、负责人、原文截止时间及人工确认事项。CSV 与汇报草稿由网站程序另行核验；不要讨论或计算其中的任何数字。",
+            "办公材料": fields["办公材料"],
+            "CSV数据": "",
+            "待核验汇报": "",
+        }
+        prompt = "请只处理下面的办公材料，不要分析未提供的 CSV 或汇报草稿。\n" + json.dumps(document_fields, ensure_ascii=False)
+    else:
+        prompt = original_prompt
 
     request_body = json.dumps({"input": {"prompt": prompt}, "parameters": {}, "debug": {}}, ensure_ascii=False).encode("utf-8")
     request = Request(
@@ -51,4 +67,6 @@ def ask_agent(payload: dict[str, str]) -> dict[str, str]:
     answer = output.get("text")
     if not isinstance(answer, str) or not answer.strip():
         raise RuntimeError("百炼未返回有效答复，请检查智能体配置")
+    if checked_csv:
+        answer = "## 会议材料整理（智能体辅助，请核对原文）\n" + answer.strip() + "\n\n" + checked_csv
     return {"status": "COMPLETED", "answer": answer, "agent": "职效智办·百炼智能体"}

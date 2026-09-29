@@ -72,7 +72,7 @@
     fetch('/capabilities').then(response => response.json()).then(data => {
       aiAgentReady = Boolean(data.ai_agent_ready);
       document.getElementById('mode-note').textContent = aiAgentReady
-        ? '当前已连接百炼智能体：模型可理解任务并调用办公分析工具；模型调用会消耗百炼账户额度。'
+        ? '当前已连接百炼智能体：会议材料由模型辅助整理；常见任务 CSV 的行数、工时、状态和重复记录由程序计算。模型调用会消耗百炼账户额度。'
         : '当前仅提供固定工具流程的分析演示；百炼智能体尚未连接。';
       submit.textContent = aiAgentReady ? '让智能体分析' : '生成分析报告（规则演示）';
     }).catch(() => {
